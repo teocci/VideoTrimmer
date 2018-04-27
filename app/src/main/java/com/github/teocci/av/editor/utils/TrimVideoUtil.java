@@ -24,6 +24,11 @@ import java.util.Locale;
 
 import static android.media.MediaMetadataRetriever.METADATA_KEY_DURATION;
 import static android.media.MediaMetadataRetriever.OPTION_CLOSEST_SYNC;
+import static com.github.teocci.av.editor.utils.Config.DATE_FORMAT_FILE;
+import static com.github.teocci.av.editor.utils.Config.DIRECTORY_BASE;
+import static com.github.teocci.av.editor.utils.Config.DS;
+import static com.github.teocci.av.editor.utils.Config.MP4_EXTENTION;
+import static com.github.teocci.av.editor.utils.Config.VT_PREFIX;
 
 /**
  * Created by teocci.
@@ -44,9 +49,10 @@ public class TrimVideoUtil
 
     public static void trim(Context context, String inputFile, String outputFile, long startMs, long endMs, final TrimVideoListener callback)
     {
-        final String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
-        final String outputName = "trimmedVideo_" + timeStamp + ".mp4";
-        outputFile = outputFile + "/" + outputName;
+        final String timeStamp = new SimpleDateFormat(DATE_FORMAT_FILE, Locale.getDefault()).format(new Date());
+
+        final String outputName = VT_PREFIX + timeStamp + MP4_EXTENTION;
+        outputFile = outputFile + DS + outputName;
 
         String start = convertSecondsToTime(startMs / 1000);
         String duration = convertSecondsToTime((endMs - startMs) / 1000);
@@ -68,9 +74,7 @@ public class TrimVideoUtil
             FFmpeg.getInstance(context).execute(command, new ExecuteBinaryResponseHandler()
             {
                 @Override
-                public void onFailure(String s)
-                {
-                }
+                public void onFailure(String s) {}
 
                 @Override
                 public void onSuccess(String s)
@@ -85,9 +89,7 @@ public class TrimVideoUtil
                 }
 
                 @Override
-                public void onFinish()
-                {
-                }
+                public void onFinish() {}
             });
         } catch (FFmpegCommandAlreadyRunningException e) {
             e.printStackTrace();

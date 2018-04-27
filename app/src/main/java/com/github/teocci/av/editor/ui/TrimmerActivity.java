@@ -18,6 +18,19 @@ import com.github.teocci.av.editor.utils.LogHelper;
 import com.github.teocci.av.editor.utils.TrimVideoUtil;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
+import static android.os.Environment.DIRECTORY_DCIM;
+import static com.github.teocci.av.editor.utils.Config.APP_NAME;
+import static com.github.teocci.av.editor.utils.Config.DATE_FORMAT_FILE;
+import static com.github.teocci.av.editor.utils.Config.DIRECTORY_BASE;
+import static com.github.teocci.av.editor.utils.Config.DIRECTORY_PARENT;
+import static com.github.teocci.av.editor.utils.Config.DS;
+import static com.github.teocci.av.editor.utils.Config.MP4_EXTENTION;
+import static com.github.teocci.av.editor.utils.Config.VC_PREFIX;
+import static com.github.teocci.av.editor.utils.Config.VT_PREFIX;
 
 public class TrimmerActivity extends AppCompatActivity implements TrimVideoListener
 {
@@ -90,20 +103,16 @@ public class TrimmerActivity extends AppCompatActivity implements TrimVideoListe
     @Override
     public void onFinishTrim(String in)
     {
-        //TODO: please handle your trimmed video url here!!!
-        String out = "/storage/emulated/0/Android/data/com.iknow.android/cache/compress.mp4";
+        final String timeStamp = new SimpleDateFormat(DATE_FORMAT_FILE, Locale.getDefault()).format(new Date());
+        String out = DIRECTORY_BASE + DS + VC_PREFIX + timeStamp + MP4_EXTENTION;
         buildDialog(getResources().getString(R.string.compressing)).show();
         CompressVideoUtil.compress(this, in, out, new CompressVideoHandler()
         {
             @Override
-            public void onSuccess(String message)
-            {
-            }
+            public void onSuccess(String message) {}
 
             @Override
-            public void onFailure(String message)
-            {
-            }
+            public void onFailure(String message) {}
 
             @Override
             public void onFinish()

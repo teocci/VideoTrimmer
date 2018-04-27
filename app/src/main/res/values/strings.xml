@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Video Editor</string>
+    <string name="app_name">Video Trimmer</string>
     <string name="trimmed_done">Video trimming has been completed!</string>
     <string name="trimming">Video trimming…</string>
     <string name="compressing">Video compressing…</string>

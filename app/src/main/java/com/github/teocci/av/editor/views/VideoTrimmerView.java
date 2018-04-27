@@ -31,6 +31,7 @@ import com.github.teocci.av.editor.utils.DeviceUtil;
 import com.github.teocci.av.editor.utils.LogHelper;
 import com.github.teocci.av.editor.utils.TrimVideoUtil;
 import com.github.teocci.av.editor.utils.UnitConverter;
+import com.github.teocci.av.editor.views.VideoThumbHorizontalListView.OnScrollStateChangedListener;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -78,6 +79,35 @@ public class VideoTrimmerView extends FrameLayout
 
     private final MessageHandler messageHandler = new MessageHandler(this);
 
+    private OnScrollStateChangedListener scrollStateChangedListener = new OnScrollStateChangedListener()
+    {
+        @Override
+        public void onScrollStateChanged(ScrollState scrollState, int scrolledOffset)
+        {
+            if (videoThumbListView.getCurrentX() == 0)
+                return;
+
+            switch (scrollState) {
+                case SCROLL_STATE_FLING:
+                case SCROLL_STATE_IDLE:
+                case SCROLL_STATE_TOUCH_SCROLL:
+                    if (scrolledOffset < 0) {
+                        VideoTrimmerView.this.scrolledOffset = VideoTrimmerView.this.scrolledOffset - Math.abs(scrolledOffset);
+                        if (VideoTrimmerView.this.scrolledOffset <= 0)
+                            VideoTrimmerView.this.scrolledOffset = 0;
+                    } else {
+                        if (PixToTime(VideoTrimmerView.this.scrolledOffset + SCREEN_WIDTH) <= duration) // if it can scroll to the left
+                            VideoTrimmerView.this.scrolledOffset = VideoTrimmerView.this.scrolledOffset + scrolledOffset;
+                    }
+                    onVideoReset();
+                    onSeekThumbs(0, VideoTrimmerView.this.scrolledOffset + leftThumbValue);
+                    onSeekThumbs(1, VideoTrimmerView.this.scrolledOffset + rightThumbValue);
+                    rangeSeekBarView.invalidate();
+                    break;
+            }
+        }
+    };
+
     public VideoTrimmerView(Context context, AttributeSet attrs)
     {
         this(context, attrs, 0);
@@ -103,7 +133,7 @@ public class VideoTrimmerView extends FrameLayout
         videoThumbAdapter = new VideoThumbAdapter(this.context);
         videoThumbListView.setAdapter(videoThumbAdapter);
 
-        videoThumbListView.setOnScrollStateChangedListener(onScrollStateChangedListener);
+        videoThumbListView.setOnScrollStateChangedListener(scrollStateChangedListener);
         setUpListeners();
 
         setUpSeekBar();
@@ -337,35 +367,14 @@ public class VideoTrimmerView extends FrameLayout
 
     private void setUpListeners()
     {
-        progressListener = new ProgressVideoListener()
-        {
-            @Override
-            public void updateProgress(int time, int max, float scale)
-            {
-                updateVideoProgress(time);
-            }
-        };
+        progressListener = (time, max, scale) -> updateVideoProgress(time);
 
         findViewById(R.id.cancelBtn).setOnClickListener(
-                new OnClickListener()
-                {
-                    @Override
-                    public void onClick(View view)
-                    {
-                        onCancelClicked();
-                    }
-                }
+                view -> onCancelClicked()
         );
 
         findViewById(R.id.finishBtn).setOnClickListener(
-                new OnClickListener()
-                {
-                    @Override
-                    public void onClick(View view)
-                    {
-                        onSaveClicked();
-                    }
-                }
+                view -> onSaveClicked()
         );
 
         rangeSeekBarView.addOnRangeSeekBarListener(new RangeSeekBarListener()
@@ -421,32 +430,11 @@ public class VideoTrimmerView extends FrameLayout
             }
         });
 
-        videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener()
-        {
-            @Override
-            public void onPrepared(MediaPlayer mp)
-            {
-                onVideoPrepared(mp);
-            }
-        });
+        videoView.setOnPreparedListener(mp -> onVideoPrepared(mp));
 
-        videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener()
-        {
-            @Override
-            public void onCompletion(MediaPlayer mp)
-            {
-                onVideoCompleted();
-            }
-        });
+        videoView.setOnCompletionListener(mp -> onVideoCompleted());
 
-        playView.setOnClickListener(new OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                onClickVideoPlayPause();
-            }
-        });
+        playView.setOnClickListener(v -> onClickVideoPlayPause());
     }
 
     private void setUpProgressBarMarginsAndWidth(int left, int right)
@@ -585,35 +573,6 @@ public class VideoTrimmerView extends FrameLayout
     {
         playView.setImageResource(isPlaying ? R.drawable.ic_video_stop : R.drawable.ic_video_play);
     }
-
-    private VideoThumbHorizontalListView.OnScrollStateChangedListener onScrollStateChangedListener = new VideoThumbHorizontalListView.OnScrollStateChangedListener()
-    {
-        @Override
-        public void onScrollStateChanged(ScrollState scrollState, int scrolledOffset)
-        {
-            if (videoThumbListView.getCurrentX() == 0)
-                return;
-
-            switch (scrollState) {
-                case SCROLL_STATE_FLING:
-                case SCROLL_STATE_IDLE:
-                case SCROLL_STATE_TOUCH_SCROLL:
-                    if (scrolledOffset < 0) {
-                        VideoTrimmerView.this.scrolledOffset = VideoTrimmerView.this.scrolledOffset - Math.abs(scrolledOffset);
-                        if (VideoTrimmerView.this.scrolledOffset <= 0)
-                            VideoTrimmerView.this.scrolledOffset = 0;
-                    } else {
-                        if (PixToTime(VideoTrimmerView.this.scrolledOffset + SCREEN_WIDTH) <= duration) // if it can scroll to the left
-                            VideoTrimmerView.this.scrolledOffset = VideoTrimmerView.this.scrolledOffset + scrolledOffset;
-                    }
-                    onVideoReset();
-                    onSeekThumbs(0, VideoTrimmerView.this.scrolledOffset + leftThumbValue);
-                    onSeekThumbs(1, VideoTrimmerView.this.scrolledOffset + rightThumbValue);
-                    rangeSeekBarView.invalidate();
-                    break;
-            }
-        }
-    };
 
     private class VideoThumbAdapter extends ArrayAdapter<Bitmap>
     {

@@ -17,12 +17,16 @@ import com.github.teocci.av.editor.handlers.VideoRequestHandler;
 import com.github.teocci.av.editor.interfaces.BasicListener;
 import com.github.teocci.av.editor.models.VideoInfo;
 import com.github.teocci.av.editor.utils.ContextUtils;
+import com.github.teocci.av.editor.utils.LogHelper;
 import com.github.teocci.av.editor.utils.TrimVideoUtil;
 import com.github.teocci.av.editor.views.SpacesItemDecoration;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.github.teocci.av.editor.utils.Config.DIRECTORY_BASE;
 
 /**
  * Created by teocci.
@@ -31,6 +35,8 @@ import java.util.List;
  */
 public class VideoSelectActivity extends AppCompatActivity implements View.OnClickListener
 {
+    private static final String TAG = LogHelper.makeLogTag(VideoSelectActivity.class);
+
     private VideoSelectLayoutBinding binding;
 
     private List<VideoInfo> allVideos = new ArrayList<>();
@@ -46,6 +52,7 @@ public class VideoSelectActivity extends AppCompatActivity implements View.OnCli
         ContextUtils.init(this);
         initImageLoader(this);
         initFFmpegBinary(this);
+        initBaseDirectory();
 
         allVideos = TrimVideoUtil.getAllVideoFiles(this);
         GridLayoutManager manager = new GridLayoutManager(this, 4);
@@ -122,6 +129,20 @@ public class VideoSelectActivity extends AppCompatActivity implements View.OnCli
             });
         } catch (FFmpegNotSupportedException e) {
             e.printStackTrace();
+        }
+    }
+
+
+    private void initBaseDirectory()
+    {
+        File directory = new File(DIRECTORY_BASE);
+        // If the directory dir doesn't exist, create it
+        if (!directory.exists()) {
+            if (directory.mkdirs()) {
+                LogHelper.e(TAG, "Successfully created dir");
+            } else {
+                LogHelper.e(TAG, "Failed to create dir");
+            }
         }
     }
 
