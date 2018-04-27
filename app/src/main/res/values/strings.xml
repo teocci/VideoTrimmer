@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Video Editor</string>
+    <string name="trimmed_done">Video trimming has been completed!</string>
+    <string name="trimming">Video trimming…</string>
+    <string name="compressing">Video compressing…</string>
+    <string name="compressed_done">Video compression has been completed!</string>
+    <string name="video_trimmer_done">Done</string>
+    <string name="video_trimmer_back">Back</string>
+    <string name="video_trimmer_tip">Adjust the beginning or the end of your video</string>
+    <string name="video_select_title">Select a video</string>
+    <string name="video_select">Edit</string>
+    <string name="video_item_duration">12:10</string>
+    <string name="video_thumb_item">Video thumb item</string>
+</resources>
